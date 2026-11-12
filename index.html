@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AV’s Peer Benchmark</title><link rel="icon" href="favicon.ico">
+<link rel="stylesheet" href="web/app.css">
+</head><body>
+<div id="loading"><div class="spin"></div><div id="loadmsg">Loading credit union and bank data…</div></div>
+<header>
+  <h1><img class="logo" src="web/logo-gold.png" alt=""><span class="av">AV’s</span> Peer Benchmark</h1>
+  <nav id="tabs"></nav>
+  <div class="hr"><span id="coverage"></span><button id="refresh" title="Checks automatically when a new quarter is due; click to check now">Check for new data</button></div>
+</header>
+<div id="notice" hidden><span id="noticetext"></span><a href="#" id="noticeclose">Dismiss</a></div>
+<div id="ctx">
+  <div class="seg" id="kind"><button data-t="cu" class="on">Credit unions</button><button data-t="bank">Banks</button></div>
+  <div class="field grow" id="subjbox">
+    <label>Primary institution</label>
+    <div class="search"><input id="subj" type="text" placeholder="Name or charter / cert #" autocomplete="off"><ul id="subjlist" hidden></ul></div>
+  </div>
+  <div class="field"><label>Quarter</label><select id="period"></select></div>
+  <div class="field grow2">
+    <label>Comparison set <span class="hint">the first group sets rank and percentile</span></label>
+    <div id="groups"></div>
+  </div>
+  <div class="field"><label>Peer value</label><select id="mode"></select></div>
+</div>
+<div id="printbrand"><img src="web/logo-navy.png" alt=""><span><i>AV’s</i> Peer Benchmark</span></div>
+<main id="view"></main>
+<div id="tip" hidden></div>
+<div id="toast" hidden></div>
+<div id="modal" hidden><div class="box"><div id="modalbody"></div></div></div>
+<script src="static/shim.js"></script>
+<script src="web/core.js"></script>
+<script src="web/charts.js"></script>
+<script src="web/views1.js"></script>
+<script src="web/views2.js"></script>
+<script>boot();</script>
+</body></html>

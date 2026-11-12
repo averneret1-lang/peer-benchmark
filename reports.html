@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AV’s Peer Benchmark</title><link rel="icon" href="favicon.ico">
+<style>
+.embed header{display:none}.embed main{height:100vh!important}@media(max-width:860px){.embed main{height:auto!important}}
+:root{--red:#14233A;--dred:#9B3B3B;--gray:#535B67;--mgray:#8A909A;--wgray:#DDD8CE;--bg:#F7F5F0;--card:#fff;--ink:#121821}
+*{box-sizing:border-box}body{margin:0;font:14px/1.45 -apple-system,Segoe UI,Arial,sans-serif;color:var(--ink);background:var(--bg)}
+header{background:linear-gradient(180deg,#14233A,#0B1626);color:#F7F5F0;border-bottom:2px solid #B08D57;padding:12px 20px;display:flex;align-items:baseline;gap:12px}
+header h1{font:500 20px/1 'Didot','Bodoni 72','Playfair Display',Georgia,serif;margin:0}header h1 .av{color:#B08D57;font-style:italic}header span{opacity:.85;font-size:13px}
+main{display:grid;grid-template-columns:340px 1fr;gap:16px;padding:16px;height:calc(100vh - 48px)}
+@media(max-width:860px){main{grid-template-columns:1fr;height:auto}}
+.card{background:var(--card);border:1px solid var(--wgray);border-radius:8px;padding:16px;overflow:auto}
+label{display:block;font-weight:600;margin:12px 0 4px;font-size:13px}
+input[type=text],select{width:100%;padding:8px;border:1px solid var(--wgray);border-radius:6px;font:inherit}
+.row{display:flex;gap:8px}.row>*{flex:1}
+.check{display:flex;align-items:center;gap:6px;font-weight:400;margin:6px 0}
+.radio{display:flex;gap:14px;margin-top:4px}.radio label{font-weight:400;margin:0;display:flex;gap:5px;align-items:center}
+#custom{border-left:3px solid var(--wgray);padding-left:10px;margin-top:6px}
+#go{margin-top:16px;width:100%;padding:10px;background:var(--red);color:#fff;border:0;border-radius:6px;font:600 14px inherit;cursor:pointer}
+#go:disabled{background:var(--mgray);cursor:wait}
+.seg{display:flex;border:1px solid var(--red);border-radius:6px;overflow:hidden;margin-bottom:4px}.seg button{flex:1;padding:8px;border:0;background:#fff;color:var(--red);font:600 13px inherit;cursor:pointer}.seg button.on{background:var(--red);color:#fff}#results{position:relative}#results ul{list-style:none;margin:2px 0 0;padding:0;border:1px solid var(--wgray);border-radius:6px;max-height:260px;overflow:auto;position:absolute;width:100%;background:#fff;z-index:5}
+#results li{padding:6px 8px;cursor:pointer;border-bottom:1px solid #eee}#results li:hover{background:#f3eee4}
+#results small{color:var(--mgray)}
+#chosen{margin-top:6px;font-size:13px;color:var(--red);font-weight:600;min-height:18px}
+.hint{color:var(--mgray);font-size:12px;margin-top:4px}
+#status{margin-top:12px;font-size:13px;white-space:pre-wrap;overflow-wrap:anywhere}#status.err{color:var(--dred)}
+#links a{display:inline-block;margin:10px 10px 0 0;color:var(--red);font-weight:600}
+#pane{overflow:auto}#viewer{display:flex;flex-direction:column;gap:12px;align-items:center}
+#viewer img{width:100%;max-width:900px;border:1px solid var(--wgray);border-radius:4px;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+#loading{position:fixed;inset:0;background:rgba(247,245,240,.96);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:50;color:var(--gray);font-size:15px}#loading[hidden]{display:none}#loading .spin{width:34px;height:34px;border:4px solid var(--wgray);border-top-color:var(--red);border-radius:50%;animation:sp 1s linear infinite}@keyframes sp{to{transform:rotate(360deg)}}#loading.err{color:var(--dred)}#loading.err .spin{display:none}header{justify-content:space-between}header .l{display:flex;align-items:baseline;gap:12px}#refresh{background:transparent;border:1px solid rgba(255,255,255,.7);color:#fff;border-radius:6px;padding:5px 10px;font:600 12px inherit;cursor:pointer}#refresh:disabled{opacity:.6;cursor:wait}.msel{position:relative}.msel>button{width:100%;text-align:left;padding:8px 28px 8px 8px;border:1px solid var(--wgray);border-radius:6px;background:#fff;font:inherit;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:relative}.msel>button::after{content:'\25BE';position:absolute;right:10px;color:var(--mgray)}#statepanel{position:static;margin-top:4px;background:#fff;border:1px solid var(--wgray);border-radius:6px;box-shadow:0 6px 18px rgba(0,0,0,.12);padding:8px}#statepanel input[type=text]{margin-bottom:6px}.msel-actions{display:flex;gap:12px;font-size:12px;margin:2px 2px 6px}.msel-actions a{color:var(--red);font-weight:600;text-decoration:none}#statelist{max-height:230px;overflow:auto}#statelist label{display:flex;align-items:center;gap:6px;font-weight:400;margin:0;padding:3px 2px;cursor:pointer}#statelist label:hover{background:#f3eee4}#statelist small{margin-left:auto;color:var(--mgray)}select.half{width:100%}header .r{display:flex;align-items:center;gap:12px}#coverage{font-size:12px;opacity:.9;text-align:right;line-height:1.3}#notice{background:#EAF4E6;border-bottom:1px solid #4F9C3A;color:#2f5e22;padding:8px 20px;font-size:13px;display:flex;gap:16px;align-items:center}#notice[hidden]{display:none}#notice a{color:#2f5e22;font-weight:600}main{height:calc(100vh - 48px)}.empty{display:flex;align-items:center;justify-content:center;color:var(--mgray);height:100%;border:1px dashed var(--wgray);border-radius:8px}
+</style></head><body class="embed">
+<div id="loading"><div class="spin"></div><div id="loadmsg">Loading credit union and bank data…</div></div>
+<header><div class="l"><h1><img src="web/logo-gold.png" alt="" style="height:24px;vertical-align:-5px;margin-right:8px"><span class="av">AV’s</span> Peer Benchmark</h1><span id="sub">NCUA 5300 data · Callahan Peer method</span></div><div class="r"><span id="coverage"></span><button id="refresh" title="Checks automatically when a new quarter is due; click to check now">Check now</button></div></header>
+<div id="notice" hidden><span id="noticetext"></span><a href="#" id="noticeclose">Dismiss</a></div>
+<main>
+<section class="card">
+  <div class="seg" role="tablist"><button type="button" class="on" data-t="cu">Credit unions</button><button type="button" data-t="bank">Banks</button></div>
+  <label for="q" id="qlabel">Credit union</label>
+  <div id="results"><input id="q" type="text" placeholder="Name or charter number" autocomplete="off"><ul id="list" hidden></ul></div>
+  <div id="chosen"></div>
+  <label for="period">Quarter</label><select id="period"></select>
+  <label>Peer group</label>
+  <div class="radio"><label><input type="radio" name="mode" value="default" checked>Same state + asset tier</label>
+  <label><input type="radio" name="mode" value="custom">Custom</label></div>
+  <div class="hint">If the state has fewer than 10 peers in the tier, the group widens to neighboring states, then the region, then nationwide. The report says when it does.</div>
+  <div id="custom" hidden>
+    <label>States</label>
+    <div class="msel" id="statepick"><button type="button" id="statebtn">All states</button>
+      <div id="statepanel" hidden><input id="statesearch" type="text" placeholder="Type to filter states" autocomplete="off">
+        <div class="msel-actions"><a href="#" id="stateSubj">Use subject's state</a><a href="#" id="stateClear">Clear</a><a href="#" id="stateDone" style="margin-left:auto">Done</a></div>
+        <div id="statelist"></div></div></div>
+    <input id="states" type="hidden">
+    <label>Asset range</label>
+    <div class="row"><select id="amin" class="half"><option value="">No minimum</option></select><select id="amax" class="half"><option value="">No maximum</option></select></div>
+    <label class="check"><input id="tier" type="checkbox">Same asset tier as subject</label>
+    <label class="check"><input id="ncua" type="checkbox"><span id="grouplabel">Same NCUA peer group</span></label>
+    <label for="list2" id="listlabel">Specific charter numbers</label><input id="list2" type="text" placeholder="e.g. 5561, 17389">
+    <div class="hint">Filters combine (AND). Leave all blank for every U.S. credit union.</div>
+  </div>
+  <button id="go" disabled>Generate report</button>
+  <div id="status"></div><div id="links"></div>
+</section>
+<section id="pane"><div class="empty" id="empty">Pick a credit union and generate a report.</div></section>
+</main>
+<script src="static/shim.js"></script>
+<script>
+const $=id=>document.getElementById(id);let chosen=null,timer=null,type='cu';
+const TXT={cu:{sub:'NCUA 5300 data · Callahan Peer method',q:'Credit union',group:'Same NCUA peer group',list:'Specific charter numbers',ph:'e.g. 5561, 17389'},
+ bank:{sub:'FDIC / FFIEC call report data · S&P Capital IQ Pro-style metrics',q:'Bank',group:'Same FDIC specialization group',list:'Specific FDIC cert numbers',ph:'e.g. 12437, 6623'}};
+function setType(t){type=t;document.querySelectorAll('.seg button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+ const x=TXT[t];$('sub').textContent=x.sub;$('qlabel').textContent=x.q;$('grouplabel').textContent=x.group;$('listlabel').textContent=x.list;$('list2').placeholder=x.ph;
+ chosen=null;subjState=null;picked.clear();syncStates();$('q').value='';$('chosen').textContent='';$('go').disabled=true;$('list').hidden=true;loadMeta()}
+document.querySelectorAll('.seg button').forEach(b=>b.addEventListener('click',()=>setType(b.dataset.t)));
+const ASSET_STEPS=[['10M','$10M'],['25M','$25M'],['50M','$50M'],['100M','$100M'],['250M','$250M'],['300M','$300M'],['500M','$500M'],['750M','$750M'],['1B','$1B'],['2B','$2B'],['3B','$3B'],['5B','$5B'],['10B','$10B'],['50B','$50B'],['100B','$100B']];
+['amin','amax'].forEach(id=>{ASSET_STEPS.forEach(([v,t])=>$(id).insertAdjacentHTML('beforeend',`<option value="${v}">${id==='amin'?'At least ':'Under '}${t}</option>`))});
+let STATES=[],picked=new Set(),subjState=null;
+function goCustom(){const c=document.querySelector('input[name=mode][value=custom]');if(!c.checked){c.checked=true;$('custom').hidden=false}}
+function syncStates(){const codes=[...picked];$('states').value=codes.join(',');
+  $('statebtn').textContent=codes.length?(codes.length<=6?codes.join(', '):codes.length+' states selected'):'All states';}
+function renderStates(){const f=$('statesearch').value.trim().toLowerCase();
+  $('statelist').innerHTML=STATES.filter(s=>!f||s.name.toLowerCase().includes(f)||s.code.toLowerCase()===f)
+   .map(s=>`<label><input type="checkbox" value="${s.code}" ${picked.has(s.code)?'checked':''}>${s.name} (${s.code})<small>${s.n}</small></label>`).join('')||'<div class="hint">No match</div>';}
+$('statebtn').addEventListener('click',()=>{$('statepanel').hidden=!$('statepanel').hidden;if(!$('statepanel').hidden){$('statesearch').value='';renderStates();$('statesearch').focus()}});
+$('statesearch').addEventListener('input',renderStates);
+$('statesearch').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();const first=$('statelist').querySelector('input');if(first){first.click()}$('statesearch').select()}});
+$('statelist').addEventListener('change',e=>{const v=e.target.value;e.target.checked?picked.add(v):picked.delete(v);syncStates();goCustom()});
+$('stateClear').addEventListener('click',e=>{e.preventDefault();picked.clear();syncStates();renderStates()});
+$('stateSubj').addEventListener('click',e=>{e.preventDefault();if(subjState){picked.add(subjState);syncStates();renderStates();goCustom()}else alert('Pick a credit union or bank first.')});
+$('stateDone').addEventListener('click',e=>{e.preventDefault();$('statepanel').hidden=true});
+document.addEventListener('click',e=>{if(!$('statepick').contains(e.target))$('statepanel').hidden=true});
+['amin','amax','tier','ncua','list2'].forEach(id=>$(id).addEventListener('change',goCustom));
+const money=v=>v>=1e9?'$'+(v/1e9).toFixed(2)+'B':'$'+(v/1e6).toFixed(1)+'M';
+async function waitReady(){let fails=0;for(;;){try{const s=await (await fetch('/api/status')).json();fails=0;
+  if(s.ready){$('loading').hidden=true;return}
+  if(s.error){$('loading').className='err';$('loadmsg').textContent='Could not load data: '+s.error;return}
+  $('loading').hidden=false;$('loadmsg').textContent=s.message||'Loading…'}
+  catch(e){if(++fails>4){$('loading').hidden=false;$('loadmsg').textContent='AV’s Peer Benchmark is not running. Open it from the Desktop shortcut; this window will reconnect.'}}
+  await new Promise(r=>setTimeout(r,1000))}}
+setInterval(async()=>{if(!$('loading').hidden)return;try{await fetch('/api/ping')}catch(e){await waitReady();loadMeta()}},5000);
+let dataVersion=null;
+const fmtDate=d=>new Date(d+'T12:00').toLocaleDateString(undefined,{month:'short',day:'numeric'});
+async function refreshStatus(){try{const s=await (await fetch('/api/status')).json();
+  if(s.coverage){const c=s.coverage,b=c.bank,u=c.cu,q=p=>p?`Q${+p.slice(5)/3} ${p.slice(0,4)}`:'—';
+    $('coverage').innerHTML=`Data: credit unions ${q(u.through)} · banks ${q(b.through)}<br>Next automatic check: banks ${fmtDate(b.next_check)} · CUs ${fmtDate(u.next_check)}`}
+  let dismissed=null;try{dismissed=localStorage.getItem('pb-dismissed')}catch(e){}
+  if(s.notice&&s.notice!==dismissed){$('noticetext').textContent=s.notice;$('notice').hidden=false}
+  if(dataVersion!==null&&s.data_version!==dataVersion){loadMeta()}
+  dataVersion=s.data_version}catch(e){}}
+$('noticeclose').addEventListener('click',e=>{e.preventDefault();$('notice').hidden=true;try{localStorage.setItem('pb-dismissed',$('noticetext').textContent)}catch(e){}});
+setInterval(refreshStatus,60000);
+$('refresh').addEventListener('click',async()=>{$('refresh').disabled=true;$('refresh').textContent='Checking…';
+  try{const r=await (await fetch('/api/refresh',{method:'POST'})).json();await refreshStatus();loadMeta();alert(r.message)}
+  catch(e){alert('Update failed: '+e)}finally{$('refresh').disabled=false;$('refresh').textContent='Check now'}});
+function loadMeta(){fetch('/api/meta?type='+type).then(r=>r.json()).then(m=>{STATES=m.states||[];$('period').innerHTML=m.periods.map(p=>`<option value="${p}">Q${+p.slice(5)/3} ${p.slice(0,4)}</option>`).join('')})}
+waitReady().then(()=>{loadMeta();refreshStatus()});
+$('q').addEventListener('input',()=>{clearTimeout(timer);chosen=null;$('go').disabled=true;$('chosen').textContent='';
+  timer=setTimeout(async()=>{const q=$('q').value;if(!q.trim()){$('list').hidden=true;return}
+  const r=await (await fetch('/api/search?type='+type+'&q='+encodeURIComponent(q))).json();
+  $('list').innerHTML=r.length?r.map(d=>`<li data-c="${d.charter}" data-n="${d.name}" data-s="${d.state}">${d.name} <small>${d.city}, ${d.state} · ${money(d.assets)} · ${type==='bank'?'cert ':'#'}${d.charter}</small></li>`).join(''):'<li><small>No match</small></li>';
+  $('list').hidden=false},180)});
+$('list').addEventListener('click',e=>{const li=e.target.closest('li[data-c]');if(!li)return;
+  chosen=li.dataset.c;subjState=li.dataset.s;$('q').value=li.dataset.n;$('chosen').textContent='Selected: '+li.textContent;$('list').hidden=true;$('go').disabled=false});
+document.querySelectorAll('input[name=mode]').forEach(r=>r.addEventListener('change',()=>{$('custom').hidden=document.querySelector('input[name=mode]:checked').value!=='custom'}));
+$('go').addEventListener('click',async()=>{
+  const body={type,cu:chosen,period:$('period').value,mode:document.querySelector('input[name=mode]:checked').value,
+    states:$('states').value.trim(),assets_min:$('amin').value.trim(),assets_max:$('amax').value.trim(),
+    tier:$('tier').checked,ncua_group:$('ncua').checked,cu_list:$('list2').value.trim()};
+  $('go').disabled=true;$('status').className='';$('status').textContent='Building report…';$('links').innerHTML='';
+  try{const r=await (await fetch('/api/run',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})).json();
+    if(!r.ok){$('status').className='err';$('status').textContent=r.error;return}
+    $('status').textContent=r.log;
+    $('links').innerHTML=`<a href="${r.pdf}" target="_blank">Open PDF</a><a href="${r.xlsx}">Download Excel</a>${window.PB_STATIC ? '' : '<a href="#" id="reveal">Show in folder</a>'}`;
+    if($('reveal'))$('reveal').onclick=e=>{e.preventDefault();fetch('/api/reveal?name='+encodeURIComponent(r.name+'.pdf'))};
+    const imgs=ps=>ps.map(p=>`<img src="${p}" alt="Report page">`).join('');
+    $('pane').innerHTML=r.pages.length?`<div id="viewer">${imgs(r.pages)}</div>`:`<iframe src="${r.pdf}" title="Report" style="width:100%;height:calc(100vh - 40px);border:0;border-radius:6px;background:#fff"></iframe>`;
+  }catch(e){$('status').className='err';$('status').textContent='Request failed: '+e}
+  finally{$('go').disabled=false}});
+</script></body></html>
