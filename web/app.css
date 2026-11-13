@@ -78,6 +78,8 @@ code,.code{font-family:Consolas,Menlo,monospace;font-size:12px;background:#F2EFE
 .fx{font-family:Consolas,Menlo,monospace;font-size:12px;color:var(--gray);word-break:break-word}
 #loading{position:fixed;inset:0;background:rgba(247,245,240,.97);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:90;color:var(--gray);font-size:15px}#loading[hidden]{display:none}
 .spin{width:34px;height:34px;border:4px solid var(--wgray);border-top-color:var(--red);border-radius:50%;animation:sp 1s linear infinite}@keyframes sp{to{transform:rotate(360deg)}}
+.quip{font-family:Georgia,serif;font-style:italic;color:var(--red);font-size:14px;max-width:min(520px,90vw);text-align:center;min-height:2.6em;transition:opacity .4s}.quip.fade{opacity:0}
+#busyquip{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:80;display:flex;align-items:center;gap:10px;background:var(--card,#fff);border:1px solid var(--wgray);border-left:3px solid #B08D57;border-radius:8px;padding:10px 16px;box-shadow:0 6px 24px rgba(20,35,58,.12);max-width:calc(100vw - 32px)}#busyquip[hidden]{display:none}#busyquip .quip{min-height:0;text-align:left}.spin.sm{width:18px;height:18px;border-width:3px;flex:none}
 .busy{opacity:.5;pointer-events:none;transition:opacity .15s}
 iframe.rep{width:100%;height:calc(100vh - 150px);border:0;border-radius:8px;background:#fff}
 .scroll{overflow:auto;max-height:calc(100vh - 290px)}

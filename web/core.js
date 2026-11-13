@@ -223,13 +223,54 @@ function go(tab, opts) {
   $('#ctx').style.display = S.tab === 'reports' ? 'none' : '';
   render(opts);
 }
+// Loading lines: something to read while the numbers arrive.
+const QUIPS = [
+  'Counting every penny. Twice, because we are bankers.',
+  'Reconciling the ledgers. They never agree on the first try.',
+  'Asking 4,000 credit unions to line up by asset size…',
+  'Annualizing year-to-date income. Multiply by 4, divide by the quarter, pray.',
+  'Your peer group is putting on its good suit.',
+  'Calculating ROA. Return on Anticipation is high.',
+  'Teaching Python to read call reports. It prefers novels.',
+  'Bribing the efficiency ratio to look efficient.',
+  'Sorting deposits from the couch cushions of America.',
+  'Trimming the 5th and 95th percentiles. Sorry, outliers.',
+  'Loans are growing. So is this progress bar, in spirit.',
+  'Cost of funds: high. Cost of this wait: a few seconds.',
+  'Checking that assets still equal liabilities plus equity. Phew.',
+  'Waking up the examiners. Gently.',
+  'Fetching 80 quarters of history. History is heavy.',
+  'Converting thousands to dollars. No decimals were harmed.',
+  'Net interest margin? We are working on our net patience margin.',
+  'Comparing apples to apples. No bananas in this peer group.',
+  'Good analysis is like compound interest. It takes a moment.',
+  'Shaking hands with the FDIC and the NCUA. They both say hi.',
+  'Stress testing your patience. You are passing with flying colors.',
+  'Polishing the charts until the gold shows.',
+  'Members first. Data second. Jokes third.',
+  'Loading faster than a wire on a Friday afternoon.',
+];
+let quipAt = Math.floor(Math.random() * QUIPS.length);
+function nextQuip(el) {
+  if (!el) return;
+  el.classList.add('fade');
+  setTimeout(() => { el.textContent = QUIPS[quipAt++ % QUIPS.length]; el.classList.remove('fade'); }, el.textContent ? 400 : 0);
+}
+function rotateQuips(el, ms) { nextQuip(el); return setInterval(() => nextQuip(el), ms || 4500); }
+let busyTimer = null, busyRot = null;
+function busyQuip(on) {
+  const box = $('#busyquip'); if (!box) return;
+  clearTimeout(busyTimer); clearInterval(busyRot);
+  if (!on) { box.hidden = true; return; }
+  busyTimer = setTimeout(() => { box.hidden = false; busyRot = rotateQuips(box.querySelector('.quip')); }, 1500);   // only for slow loads
+}
 let renderSeq = 0;
 async function render(opts) {
   const seq = ++renderSeq, view = $('#view');
-  view.classList.add('busy');
+  view.classList.add('busy'); busyQuip(true);
   try { await VIEWS[S.tab](view, opts || {}, () => seq === renderSeq); }
   catch (e) { if (seq === renderSeq) view.innerHTML = `<div class="card"><div class="note">${esc(e.message)}</div></div>`; }
-  finally { if (seq === renderSeq) view.classList.remove('busy'); }
+  finally { if (seq === renderSeq) { view.classList.remove('busy'); busyQuip(false); } }
 }
 function changed() { saveState(); renderGroups(); render(); }
 function setGroupMeta(groups, subject) { if (subject && S.subj && !S.subj.merge && subject.name) { S.subj.name = subject.name; S.subj.assets = subject.assets; if (document.activeElement !== $('#subj')) $('#subj').value = subject.name; } S.groupMeta = groups.map(g => ({name: g.name, n: g.n, note: g.note, type: g.type, kind: g.kind})); renderGroups(); }
@@ -263,13 +304,14 @@ async function setType(t, keepTab) {
 async function reloadLib() { S.lib = await apiGet('lib', {type: S.type}); S.saved = await api('saved', {type: S.type}); }
 
 async function waitReady() {
+  const rot = rotateQuips($('#quip'));
   for (;;) {
     try {
       const s = await (await fetch('/api/status')).json();
       if (s.error) { $('#loadmsg').textContent = 'Could not load data: ' + s.error; return false; }
       if (s.ready) {
         const a = await (await fetch('/api/x/state')).json();
-        if (a.ready) { $('#loading').hidden = true; return true; }
+        if (a.ready) { clearInterval(rot); $('#loading').hidden = true; return true; }
         $('#loadmsg').textContent = a.error ? 'Could not prepare the analyzer: ' + a.error : (a.message || 'Preparing the full call report library…');
       } else $('#loadmsg').textContent = s.message || 'Loading…';
     } catch (e) { $('#loadmsg').textContent = 'Peer Benchmark is not running. Open it from the Desktop shortcut; this window will reconnect.'; $('#loading').hidden = false; }
