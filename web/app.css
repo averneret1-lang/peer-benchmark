@@ -141,3 +141,19 @@ table.t.rom td:nth-child(2){white-space:normal;min-width:140px}
 header h1{display:flex;align-items:center;gap:10px}header h1 .logo{height:26px;width:auto}
 #printbrand{display:none}
 @media print{#printbrand{display:flex;align-items:center;gap:10px;border-bottom:2px solid #B08D57;padding:0 0 6px;margin-bottom:10px;font:500 18px Georgia,serif;color:#14233A}#printbrand img{height:28px}#printbrand i{color:#B08D57}}
+
+/* early warning + what-if plan */
+.flag{display:inline-block;width:11px;height:11px;border-radius:50%;vertical-align:-1px;background:var(--good)}.flag.yellow{background:#C9A227}.flag.red{background:var(--bad)}
+.ftile.red{border-color:#E4C3C3;background:#FBF3F3}.ftile.yellow{border-color:#EADBA8;background:#FDF9EC}.ftile b{font-size:17px}
+table.flags td.why{white-space:normal;min-width:260px;max-width:520px;color:var(--gray)}table.flags tr.fl-red td.why{color:var(--bad)}
+table.flags{table-layout:fixed;width:100%;min-width:860px}table.flags th:nth-child(1){width:22px}table.flags th:nth-child(2){width:27%}
+table.flags th:nth-child(3),table.flags th:nth-child(4){width:11%}table.flags th:nth-child(5){width:15%}table.flags th:nth-child(6){width:90px}
+table.flags td.why{min-width:0;max-width:none}table.flags th{white-space:normal}
+.form.plan{margin:10px 0 4px}.form.plan label{display:flex;flex-direction:column;gap:3px;font-size:12.5px;font-weight:600;color:var(--ink)}
+.form.plan small{font-weight:400;font-size:11.5px}.unit{display:flex;align-items:center;gap:6px}.unit input{width:100%;max-width:140px}.unit i{font-style:normal;color:var(--gray);font-weight:400}
+.goal{margin-top:10px;padding:10px 12px;border-left:3px solid #B08D57;background:#FBF8F1;border-radius:4px;font-size:13px}.goal b{margin-right:6px;color:var(--red)}.goal.met{border-left-color:var(--good)}
+/* phones: toggle + institution on their own rows, quarter and peer value side by side */
+@media(max-width:600px){#ctx{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px 10px;padding:8px 12px}
+#ctx>#kind{grid-column:1/-1;justify-self:start}#ctx>#subjbox{grid-column:1/-1}#ctx>.field.grow2{grid-column:1/-1}
+#ctx select{width:100%}}
+table.pf td:first-child{white-space:normal;min-width:120px}

@@ -109,11 +109,13 @@ VIEWS.merger = async (view, opts, live) => {
 };
 
 // ================================================================ Market share
-const MK = {areas: [], cu: true, state: '', counties: [], list: []};
+const MK = {areas: [], cu: true, state: '', counties: [], list: [], purpose: 'all'};
 VIEWS.market = async (view, opts, live) => {
   let r = null;
   if (MK.areas.length) {
-    r = await api('market', {areas: MK.areas, include_cu: MK.cu, subject: S.subj && !S.subj.merge ? {type: S.type, id: S.subj.id} : null});
+    const sub = S.subj && !S.subj.merge ? {type: S.type, id: S.subj.id} : null;
+    [r, view._hm] = await Promise.all([api('market', {areas: MK.areas, include_cu: MK.cu, subject: sub}),
+      api('mortgage', {areas: MK.areas, subject: sub, purpose: MK.purpose}).catch(e => ({error: e.message}))]);
     if (!live()) return;
   }
   const areaShort = MK.areas.slice(0, 3).map(a => `${a.state}${a.counties && a.counties.length ? ': ' + a.counties.slice(0, 3).join(', ') + (a.counties.length > 3 ? ` +${a.counties.length - 3} more` : '') : ' (statewide)'}`).join(' · ') + (MK.areas.length > 3 ? ` · +${MK.areas.length - 3} more states` : '');
@@ -147,7 +149,8 @@ VIEWS.market = async (view, opts, live) => {
         <button class="btn" id="madd" ${MK.state ? '' : 'disabled'}>Add to market</button>
         ${MK.areas.length ? '<button class="btn" id="mclr">Clear market</button>' : ''}
         <label class="check"><input type="checkbox" id="mcu" ${MK.cu ? 'checked' : ''}>Include credit unions</label></div>
-      ${body}</div>`;
+      ${body}</div>${r ? mortgageCard(view._hm) : ''}`;
+  if (view._hm && !view._hm.empty && !view._hm.error) mortgageWire(view._hm, areaTxt);
   if (r && !r.empty) {
     barList($('#mbars'), r.institutions.slice(0, 12).map(x => ({label: x.name.replace(/,? National Association$/i, ', N.A.'), value: x.share, me: x.subject})), 'pct1');
     const me = r.institutions.find(x => x.subject);
@@ -182,6 +185,46 @@ VIEWS.market = async (view, opts, live) => {
   if ($('#mclr')) $('#mclr').onclick = () => { MK.areas = []; render(); };
   $('#mcu').onchange = () => { MK.cu = $('#mcu').checked; render(); };
 };
+
+// ---------------------------------------------------------------- mortgage lending (HMDA)
+const PURPOSE = {all: 'All purposes', purchase: 'Home purchase', refi: 'Refinance'};
+function mortgageCard(h) {
+  if (!h) return '';
+  if (h.error) return `<div class="card"><h2>Mortgage lending</h2><div class="note">${esc(h.error)}</div></div>`;
+  if (h.missing) return '<div class="card"><h2>Mortgage lending</h2><div class="empty">HMDA mortgage data is not installed. Run <code>.venv/bin/python hmda.py</code> once to add it.</div></div>';
+  const head = `<div class="bar"><div><h2>Mortgage lending, ${h.year}</h2><div class="sub" style="margin:0">Mortgages on 1-4 family homes reported under HMDA, by the county of the property.</div></div><span class="sp"></span>
+    <select id="hmp">${Object.entries(PURPOSE).map(([k, v]) => `<option value="${k}" ${k === MK.purpose ? 'selected' : ''}>${v}</option>`).join('')}</select>${h.empty ? '' : '<button class="btn" id="hxl">Excel</button>'}</div>`;
+  if (h.empty) return `<div class="card">${head}<div class="empty">No HMDA mortgage originations in this market.</div></div>`;
+  const s = h.summary, me = h.me, nm = S.subj ? esc(title(S.subj.name)) : '';
+  const kindPill = k => `<span class="pill ${k === 'other' ? '' : k}">${k === 'cu' ? 'Credit union' : k === 'bank' ? 'Bank' : 'Non-bank'}</span>`;
+  return `<div class="card">${head}
+    ${h.unknown && h.unknown.length ? `<div class="note">Not matched to a county code: ${esc(h.unknown.join('; '))}</div>` : ''}
+    <div class="tiles">
+      <div class="tile"><small>Originations, ${esc(PURPOSE[h.purpose].toLowerCase())}</small><b>${fmt(s.amount, 'usd')}</b><em>${s.loans.toLocaleString()} loans</em></div>
+      <div class="tile"><small>Lenders</small><b>${s.lenders.toLocaleString()}</b><em>top-5 share ${fmt(s.top5, 'pct1')} · HHI ${Math.round(s.hhi).toLocaleString()}</em></div>
+      <div class="tile"><small>Credit union share</small><b>${fmt(s.cu_share, 'pct1')}</b><em>of dollars originated</em></div>
+      <div class="tile"><small>Bank share</small><b>${fmt(s.bank_share, 'pct1')}</b><em>non-bank lenders ${fmt(s.other_share, 'pct1')}</em></div>
+      <div class="tile"><small>Denial rate</small><b>${fmt(s.deny, 'pct1')}</b><em>of ${s.apps.toLocaleString()} applications</em></div>
+      ${me ? `<div class="tile"><small>${nm}</small><b>${fmt(me.share, 'pct')}</b><em>#${me.rank} · ${fmt(me.amount, 'usd')} · ${me.loans.toLocaleString()} loans</em></div>` :
+        S.subj && !S.subj.merge ? `<div class="tile"><small>${nm}</small><b>None</b><em>${h.reporter ? 'no HMDA originations in this market' : `does not report HMDA data for ${h.year} (smaller lenders are exempt)`}</em></div>` : ''}</div>
+    <div class="two"><div><h3>Mortgage share leaders</h3><div id="hbars"></div></div>
+      <div>${h.counties.length ? `<h3>${nm}: mortgage share by county</h3><div class="scroll" style="max-height:300px"><table class="t"><tr><th class="l">County</th><th>Loans</th><th>Amount</th><th>Share</th></tr>
+        ${h.counties.map(c => `<tr><td class="l">${esc(c.county)}, ${esc(c.state)}</td><td>${c.loans.toLocaleString()}</td><td>${fmt(c.amount, 'usd')}</td><td>${fmt(c.share, 'pct')}</td></tr>`).join('')}</table></div>` :
+        '<h3>How to read this</h3><div class="sub">Share is the lender\'s part of the dollars originated in the market. Non-bank lenders are mortgage companies that report to HUD or the CFPB and do not file a call report.</div>'}</div></div>
+    <h3>Mortgage lenders in the market (${h.institutions.length.toLocaleString()}${s.lenders > h.institutions.length ? ' of ' + s.lenders.toLocaleString() : ''})</h3>
+    <div class="scroll" style="max-height:454px"><table class="t"><tr><th class="l">Lender</th><th class="l">Type</th><th>Loans</th><th>Amount</th><th>Share</th><th>Share of loans</th><th>Avg loan</th><th>Applications</th><th>Denial rate</th></tr>
+    ${h.institutions.map(x => `<tr class="${x.subject ? 'me' : ''}"><td class="l"><span class="muted">${x.rank}.</span> ${esc(title(x.name))}</td><td class="l">${kindPill(x.kind)}</td><td>${x.loans.toLocaleString()}</td><td>${fmt(x.amount, 'usd')}</td><td>${fmt(x.share, 'pct')}</td><td>${fmt(x.share_n, 'pct')}</td><td>${fmt(x.avg, 'usd')}</td><td>${x.apps.toLocaleString()}</td><td>${fmt(x.deny, 'pct1')}</td></tr>`).join('')}</table></div>
+    <div class="hint" style="margin-top:6px">Source: ${h.year} HMDA snapshot national loan-level dataset (CFPB / FFIEC), originated loans (action taken 1) on 1-4 family homes, by the county of the property. Multifamily buildings, loans an institution bought and preapprovals are excluded. Denial rate = denied / (originated + approved not accepted + denied + withdrawn + incomplete). Banks and credit unions are linked to their call report through the HMDA institution record (Federal Reserve RSSD ID).</div></div>`;
+}
+function mortgageWire(h, areaTxt) {
+  barList($('#hbars'), h.institutions.slice(0, 12).map(x => ({label: title(x.name), value: x.share, me: x.subject})), 'pct1');
+  $('#hmp').onchange = () => { MK.purpose = $('#hmp').value; render(); };
+  $('#hxl').onclick = () => exportXlsx(`Mortgage share ${areaTxt.slice(0, 60)} ${h.year}`, [
+    {name: 'Mortgage lenders', title: `Mortgage market share, ${h.year} (${PURPOSE[h.purpose].toLowerCase()})`, subtitle: [areaTxt, 'Source: HMDA snapshot national loan-level dataset (CFPB / FFIEC). Originated loans on 1-4 family homes, by county of the property.'],
+      columns: [{label: 'Lender', width: 44}, {label: 'Rank'}, {label: 'Type', width: 14}, {label: 'LEI', width: 24}, {label: 'Loans'}, {label: 'Amount', fmt: 'usd', width: 18}, {label: 'Share', fmt: 'pct'}, {label: 'Share of loans', fmt: 'pct'}, {label: 'Avg loan', fmt: 'usd', width: 14}, {label: 'Applications'}, {label: 'Denial rate', fmt: 'pct1'}],
+      rows: h.institutions.map(x => [title(x.name), x.rank, x.kind === 'cu' ? 'Credit union' : x.kind === 'bank' ? 'Bank' : 'Non-bank', x.lei, x.loans, x.amount, x.share, x.share_n, x.avg, x.apps, x.deny])}]
+    .concat(h.counties.length ? [{name: 'By county', columns: [{label: 'County', width: 30}, {label: 'State'}, {label: 'Loans'}, {label: 'Amount', fmt: 'usd', width: 18}, {label: 'Share', fmt: 'pct'}], rows: h.counties.map(c => [c.county, c.state, c.loans, c.amount, c.share])}] : []));
+}
 
 // ================================================================ Peer group builder
 const PG = {spec: {}, name: '', prev: null};

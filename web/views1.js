@@ -51,7 +51,8 @@ VIEWS.scorecard = async (view, opts, live) => {
         <span class="acts">${dashSel}
         <button class="btn" id="savedash" title="Save the ratios shown as a dashboard of your own">Save as dashboard</button>
         <button class="btn" id="xl">Excel</button><button class="btn" id="pp">PowerPoint</button><button class="btn" id="pr">Print / PDF</button>
-        ${hasS && !S.subj.merge ? '<button class="btn pri" id="pdf" title="Branded PDF + Excel for this institution against the ranking group">Branded PDF report</button>' : ''}</span></div>
+        ${hasS ? '<button class="btn pri" id="board" title="Branded PDF and PowerPoint for the board: summary, early-warning flags, scorecard, trends, your plan and the peer group">Board packet</button>' : ''}
+        ${hasS && !S.subj.merge ? '<button class="btn" id="pdf" title="Branded PDF + Excel for this institution against the ranking group">Branded PDF report</button>' : ''}</span></div>
       ${res.groups.map(g => g.note ? `<div class="note">${esc(g.note)}</div>` : '').join('')}
       ${!hasS ? '<div class="sub">Pick a primary institution above to see ranks, percentiles, star ratings and a written analysis.</div>' : ''}
       ${ins ? `<h3>What stands out</h3><div class="ins">${ins}</div>` : ''}
@@ -96,6 +97,7 @@ VIEWS.scorecard = async (view, opts, live) => {
     exportPptx(headline() + ' Scorecard', slides);
   };
   if ($('#pdf')) $('#pdf').onclick = () => brandedReport(g0);
+  if ($('#board')) $('#board').onclick = () => boardPacket();
 };
 // hand the ranking group to the existing branded PDF/Excel report generator
 async function brandedReport(g0) {

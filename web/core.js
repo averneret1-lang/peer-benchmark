@@ -208,7 +208,7 @@ function pickInstitution(cb, opts) {
 }
 
 // ---------------------------------------------------------------- tabs
-const TABS = [['scorecard', 'Scorecard'], ['trends', 'Trends & library'], ['rank', 'Rankings & screens'], ['fin', 'Financials'],
+const TABS = [['scorecard', 'Scorecard'], ['flags', 'Early warning'], ['plan', 'What-if plan'], ['trends', 'Trends & library'], ['rank', 'Rankings & screens'], ['fin', 'Financials'],
   ['rom', 'Member value'], ['merger', 'Merger'], ['market', 'Market share'], ['peers', 'Peer groups'], ['formulas', 'Formulas'], ['reports', 'PDF reports']];
 const VIEWS = {};
 function renderTabs() {
